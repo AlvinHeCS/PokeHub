@@ -1,10 +1,21 @@
 import { type Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 
 import { CardVariantPicker } from "~/app/cards/[cardId]/CardVariantPicker";
-import { db } from "~/server/db";
 import { api } from "~/trpc/server";
+
+export const revalidate = 60;
+
+const getCardData = cache(async (cardId: string) => {
+  try {
+    return await api.product.cardVariants({ cardId });
+  } catch {
+    return null;
+  }
+});
 
 export async function generateMetadata({
   params,
@@ -12,11 +23,9 @@ export async function generateMetadata({
   params: Promise<{ cardId: string }>;
 }): Promise<Metadata> {
   const { cardId } = await params;
-  const card = await db.card.findUnique({
-    where: { id: cardId },
-    include: { set: true },
-  });
-  if (!card) return { title: "Card · PokeHub" };
+  const data = await getCardData(cardId);
+  if (!data) return { title: "Card · PokeHub" };
+  const { card } = data;
   return {
     title: `${card.name} · ${card.set.name} · PokeHub`,
     description: `${card.name} (${card.set.name} #${card.number}) — buy raw or graded singles at PokeHub.`,
@@ -33,13 +42,8 @@ export default async function CardDetailPage({
   params: Promise<{ cardId: string }>;
 }) {
   const { cardId } = await params;
-
-  let data;
-  try {
-    data = await api.product.cardVariants({ cardId });
-  } catch {
-    notFound();
-  }
+  const data = await getCardData(cardId);
+  if (!data) notFound();
 
   const { card, variants } = data;
 
@@ -47,8 +51,16 @@ export default async function CardDetailPage({
     <main className="mx-auto grid max-w-4xl gap-8 p-6 md:grid-cols-2">
       <div>
         {card.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={card.imageUrl} alt={card.name} className="w-full" />
+          <div className="relative aspect-[5/7] w-full">
+            <Image
+              src={card.imageUrl}
+              alt={card.name}
+              fill
+              sizes="(min-width: 768px) 50vw, 100vw"
+              priority
+              className="object-contain"
+            />
+          </div>
         ) : null}
       </div>
       <div>

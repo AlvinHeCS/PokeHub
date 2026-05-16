@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { formatCents } from "~/lib/format";
@@ -6,6 +7,8 @@ import { api, HydrateClient } from "~/trpc/server";
 export const metadata = {
   title: "Shop · PokeHub",
 };
+
+export const revalidate = 60;
 
 export default async function ShopPage() {
   const data = await api.product.shop({ limit: 60 });
@@ -35,12 +38,15 @@ export default async function ShopPage() {
                   className="rounded border p-3 hover:bg-gray-50"
                 >
                   {card.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={card.imageUrl}
-                      alt={card.name}
-                      className="mb-2 aspect-[5/7] w-full object-contain"
-                    />
+                    <div className="relative mb-2 aspect-[5/7] w-full">
+                      <Image
+                        src={card.imageUrl}
+                        alt={card.name}
+                        fill
+                        sizes="(min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw"
+                        className="object-contain"
+                      />
+                    </div>
                   ) : (
                     <div className="mb-2 aspect-[5/7] bg-gray-100" />
                   )}
@@ -70,12 +76,15 @@ export default async function ShopPage() {
                   className="rounded border p-3 hover:bg-gray-50"
                 >
                   {p.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={p.imageUrl}
-                      alt={p.name ?? ""}
-                      className="mb-2 aspect-square w-full object-contain"
-                    />
+                    <div className="relative mb-2 aspect-square w-full">
+                      <Image
+                        src={p.imageUrl}
+                        alt={p.name ?? ""}
+                        fill
+                        sizes="(min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw"
+                        className="object-contain"
+                      />
+                    </div>
                   ) : (
                     <div className="mb-2 aspect-square bg-gray-100" />
                   )}
