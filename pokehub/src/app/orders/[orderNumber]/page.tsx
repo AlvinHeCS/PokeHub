@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { formatCents } from "~/lib/format";
 import { api } from "~/trpc/server";
+import { ClearCartOnMount } from "./ClearCartOnMount";
 import { PendingPaymentRefresher } from "./PendingPaymentRefresher";
 
 export default async function OrderConfirmationPage({
@@ -49,6 +51,7 @@ export default async function OrderConfirmationPage({
 
   return (
     <main className="mx-auto max-w-2xl p-6">
+      <ClearCartOnMount />
       <h1 className="text-2xl font-bold">Order {order.orderNumber}</h1>
       <div className="mt-1 text-sm text-gray-600">
         Status: <span className="font-medium">{order.status}</span>
@@ -116,6 +119,15 @@ export default async function OrderConfirmationPage({
           value={formatCents(order.totalCents)}
           bold
         />
+      </div>
+
+      <div className="mt-6">
+        <Link
+          href="/shop"
+          className="inline-block rounded bg-blue-600 px-4 py-2 font-medium text-white"
+        >
+          Back to shopping
+        </Link>
       </div>
     </main>
   );
