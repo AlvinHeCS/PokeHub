@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { formatCents } from "~/lib/format";
 import { api } from "~/trpc/server";
+import { PendingPaymentRefresher } from "./PendingPaymentRefresher";
 
 export default async function OrderConfirmationPage({
   params,
@@ -54,9 +55,12 @@ export default async function OrderConfirmationPage({
       </div>
 
       {order.status === "PENDING_PAYMENT" ? (
-        <div className="mt-4 rounded border border-yellow-300 bg-yellow-50 p-3 text-sm">
-          Your payment is being confirmed. Refresh this page in a moment.
-        </div>
+        <>
+          <PendingPaymentRefresher />
+          <div className="mt-4 rounded border border-yellow-300 bg-yellow-50 p-3 text-sm">
+            Your payment is being confirmed…
+          </div>
+        </>
       ) : null}
       {order.status === "PAID" || order.status === "FULFILLED" ? (
         <div className="mt-4 rounded border border-green-300 bg-green-50 p-3 text-sm">
