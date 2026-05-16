@@ -8,7 +8,6 @@ import {
 import { useState } from "react";
 
 import { env } from "~/env";
-import { useCart } from "~/lib/cart";
 
 export function CheckoutPayment({
   orderNumber,
@@ -19,7 +18,6 @@ export function CheckoutPayment({
 }) {
   const stripe = useStripe();
   const elements = useElements();
-  const clearCart = useCart((s) => s.clear);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -40,11 +38,7 @@ export function CheckoutPayment({
     if (stripeError) {
       setError(stripeError.message ?? "Payment failed");
       setSubmitting(false);
-      return;
     }
-
-    // Stripe redirects on success; clear cart optimistically.
-    clearCart();
   }
 
   return (
