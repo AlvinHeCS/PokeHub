@@ -35,7 +35,7 @@ export function Header({
           {signedIn ? (
             <span className="text-gray-600">{email}</span>
           ) : (
-            <Link href="/api/auth/signin" className="hover:underline">
+            <Link href="/signin" className="hover:underline">
               Sign in
             </Link>
           )}
