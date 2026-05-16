@@ -12,6 +12,10 @@ const config = {
         protocol: "https",
         hostname: "*.cloudfront.net",
       },
+      {
+        protocol: "https",
+        hostname: "images.pokemontcg.io",
+      },
     ],
   },
 };
