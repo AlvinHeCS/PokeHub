@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import {
@@ -27,6 +28,18 @@ const baseProductInput = {
   imageUrl: z.string().url().optional(),
 };
 
+function revalidateProduct(opts: {
+  cardId?: string | null;
+  productId?: string | null;
+  type?: ProductType;
+}) {
+  revalidatePath("/shop");
+  if (opts.cardId) revalidatePath(`/cards/${opts.cardId}`);
+  if (opts.productId && opts.type === ProductType.SEALED) {
+    revalidatePath(`/sealed/${opts.productId}`);
+  }
+}
+
 export const productRouter = createTRPCRouter({
   // ============= ADMIN: create =============
 
@@ -48,28 +61,29 @@ export const productRouter = createTRPCRouter({
           },
         },
       });
-      if (existing) {
-        return ctx.db.product.update({
-          where: { id: existing.id },
-          data: {
-            quantity: existing.quantity + input.quantity,
-            priceCents: input.priceCents,
-            description: input.description ?? existing.description,
-          },
-        });
-      }
-      return ctx.db.product.create({
-        data: {
-          type: ProductType.RAW,
-          cardId: input.cardId,
-          condition: input.condition,
-          priceCents: input.priceCents,
-          quantity: input.quantity,
-          description: input.description,
-          language: input.language,
-          imageUrl: input.imageUrl,
-        },
-      });
+      const product = existing
+        ? await ctx.db.product.update({
+            where: { id: existing.id },
+            data: {
+              quantity: existing.quantity + input.quantity,
+              priceCents: input.priceCents,
+              description: input.description ?? existing.description,
+            },
+          })
+        : await ctx.db.product.create({
+            data: {
+              type: ProductType.RAW,
+              cardId: input.cardId,
+              condition: input.condition,
+              priceCents: input.priceCents,
+              quantity: input.quantity,
+              description: input.description,
+              language: input.language,
+              imageUrl: input.imageUrl,
+            },
+          });
+      revalidateProduct({ cardId: input.cardId });
+      return product;
     }),
 
   createGraded: adminProcedure
@@ -91,7 +105,7 @@ export const productRouter = createTRPCRouter({
           message: "Graded cards must have quantity = 1",
         });
       }
-      return ctx.db.product.create({
+      const product = await ctx.db.product.create({
         data: {
           type: ProductType.GRADED,
           cardId: input.cardId,
@@ -106,6 +120,8 @@ export const productRouter = createTRPCRouter({
           imageUrl: input.imageUrl,
         },
       });
+      revalidateProduct({ cardId: input.cardId });
+      return product;
     }),
 
   createSealed: adminProcedure
@@ -139,6 +155,7 @@ export const productRouter = createTRPCRouter({
             : undefined,
         },
       });
+      revalidateProduct({ productId: product.id, type: ProductType.SEALED });
       return product;
     }),
 
@@ -156,16 +173,31 @@ export const productRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { id, ...rest } = input;
-      return ctx.db.product.update({ where: { id }, data: rest });
+      const product = await ctx.db.product.update({
+        where: { id },
+        data: rest,
+      });
+      revalidateProduct({
+        cardId: product.cardId,
+        productId: product.id,
+        type: product.type,
+      });
+      return product;
     }),
 
   delist: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.product.update({
+      const product = await ctx.db.product.update({
         where: { id: input.id },
         data: { quantity: 0 },
       });
+      revalidateProduct({
+        cardId: product.cardId,
+        productId: product.id,
+        type: product.type,
+      });
+      return product;
     }),
 
   // ============= ADMIN: list everything (incl. delisted) =============
@@ -206,47 +238,53 @@ export const productRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input: _input }) => {
-      // Distinct cards with any in-stock raw/graded product
-      const cardTiles = await ctx.db.product.findMany({
-        where: {
-          type: { in: [ProductType.RAW, ProductType.GRADED] },
-          quantity: { gt: 0 },
-          cardId: { not: null },
-        },
-        select: {
-          cardId: true,
-          priceCents: true,
-          card: { include: { set: true } },
-        },
-        orderBy: { priceCents: "asc" },
-      });
+      const [cardAggregates, sealedTiles] = await Promise.all([
+        ctx.db.product.groupBy({
+          by: ["cardId"],
+          where: {
+            type: { in: [ProductType.RAW, ProductType.GRADED] },
+            quantity: { gt: 0 },
+            cardId: { not: null },
+          },
+          _min: { priceCents: true },
+        }),
+        ctx.db.product.findMany({
+          where: { type: ProductType.SEALED, quantity: { gt: 0 } },
+          select: {
+            id: true,
+            name: true,
+            sealedType: true,
+            priceCents: true,
+            imageUrl: true,
+          },
+          orderBy: { createdAt: "desc" },
+        }),
+      ]);
 
-      // Aggregate min price per cardId
-      const byCard = new Map<
-        string,
-        {
-          card: NonNullable<(typeof cardTiles)[number]["card"]>;
-          fromPriceCents: number;
-        }
-      >();
-      for (const row of cardTiles) {
-        if (!row.card || !row.cardId) continue;
-        const existing = byCard.get(row.cardId);
-        if (!existing || row.priceCents < existing.fromPriceCents) {
-          byCard.set(row.cardId, {
-            card: row.card,
-            fromPriceCents: row.priceCents,
-          });
-        }
-      }
+      const cardIds = cardAggregates
+        .map((row) => row.cardId)
+        .filter((id): id is string => Boolean(id));
 
-      const sealedTiles = await ctx.db.product.findMany({
-        where: { type: ProductType.SEALED, quantity: { gt: 0 } },
-        orderBy: { createdAt: "desc" },
-      });
+      const cards = cardIds.length
+        ? await ctx.db.card.findMany({
+            where: { id: { in: cardIds } },
+            include: { set: true },
+          })
+        : [];
+
+      const minByCard = new Map(
+        cardAggregates.map((row) => [row.cardId, row._min.priceCents ?? 0]),
+      );
+
+      const cardTiles = cards
+        .map((card) => ({
+          card,
+          fromPriceCents: minByCard.get(card.id) ?? 0,
+        }))
+        .sort((a, b) => a.fromPriceCents - b.fromPriceCents);
 
       return {
-        cards: Array.from(byCard.values()),
+        cards: cardTiles,
         sealed: sealedTiles,
       };
     }),
@@ -255,18 +293,20 @@ export const productRouter = createTRPCRouter({
   cardVariants: publicProcedure
     .input(z.object({ cardId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const card = await ctx.db.card.findUnique({
-        where: { id: input.cardId },
-        include: { set: { include: { era: true } }, artist: true },
-      });
+      const [card, variants] = await Promise.all([
+        ctx.db.card.findUnique({
+          where: { id: input.cardId },
+          include: { set: { include: { era: true } }, artist: true },
+        }),
+        ctx.db.product.findMany({
+          where: {
+            cardId: input.cardId,
+            quantity: { gt: 0 },
+          },
+          orderBy: [{ type: "asc" }, { priceCents: "asc" }],
+        }),
+      ]);
       if (!card) throw new TRPCError({ code: "NOT_FOUND" });
-      const variants = await ctx.db.product.findMany({
-        where: {
-          cardId: input.cardId,
-          quantity: { gt: 0 },
-        },
-        orderBy: [{ type: "asc" }, { priceCents: "asc" }],
-      });
       return { card, variants };
     }),
 

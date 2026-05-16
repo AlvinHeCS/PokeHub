@@ -1,11 +1,22 @@
 import { type Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 
 import { SealedAddToCart } from "~/app/sealed/[productId]/SealedAddToCart";
 import { formatCents } from "~/lib/format";
-import { db } from "~/server/db";
 import { api } from "~/trpc/server";
+
+export const revalidate = 60;
+
+const getSealedProduct = cache(async (id: string) => {
+  try {
+    return await api.product.sealedDetail({ id });
+  } catch {
+    return null;
+  }
+});
 
 export async function generateMetadata({
   params,
@@ -13,10 +24,7 @@ export async function generateMetadata({
   params: Promise<{ productId: string }>;
 }): Promise<Metadata> {
   const { productId } = await params;
-  const p = await db.product.findUnique({
-    where: { id: productId },
-    select: { name: true, imageUrl: true, description: true },
-  });
+  const p = await getSealedProduct(productId);
   if (!p) return { title: "Sealed product · PokeHub" };
   return {
     title: `${p.name ?? "Sealed product"} · PokeHub`,
@@ -34,24 +42,23 @@ export default async function SealedDetailPage({
   params: Promise<{ productId: string }>;
 }) {
   const { productId } = await params;
-
-  let product;
-  try {
-    product = await api.product.sealedDetail({ id: productId });
-  } catch {
-    notFound();
-  }
+  const product = await getSealedProduct(productId);
+  if (!product) notFound();
 
   return (
     <main className="mx-auto grid max-w-4xl gap-8 p-6 md:grid-cols-2">
       <div>
         {product.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={product.imageUrl}
-            alt={product.name ?? ""}
-            className="w-full"
-          />
+          <div className="relative aspect-square w-full">
+            <Image
+              src={product.imageUrl}
+              alt={product.name ?? ""}
+              fill
+              sizes="(min-width: 768px) 50vw, 100vw"
+              priority
+              className="object-contain"
+            />
+          </div>
         ) : (
           <div className="aspect-square bg-gray-100" />
         )}

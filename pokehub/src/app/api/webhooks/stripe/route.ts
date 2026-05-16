@@ -7,6 +7,7 @@ import { sendOrderConfirmation } from "~/server/email/send";
 import { stripe } from "~/server/stripe";
 
 export const runtime = "nodejs";
+export const preferredRegion = "syd1";
 
 export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature");
