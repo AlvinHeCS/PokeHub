@@ -34,9 +34,6 @@ export const env = createEnv({
     S3_BUCKET: z.string(),
     CLOUDFRONT_URL: z.string().url(),
 
-    // Cron auth (Vercel Cron sends this header)
-    CRON_SECRET: z.string(),
-
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -63,7 +60,6 @@ export const env = createEnv({
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
     S3_BUCKET: process.env.S3_BUCKET,
     CLOUDFRONT_URL: process.env.CLOUDFRONT_URL,
-    CRON_SECRET: process.env.CRON_SECRET,
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
