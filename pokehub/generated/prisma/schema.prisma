@@ -1,45 +1,51 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// PokeHub schema — see /.context/design.md for design decisions.
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  provider        = "prisma-client-js"
+  output          = "../generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-  // Further reading:
-  // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-  // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [pg_trgm]
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// =====================================================================
+// Auth (NextAuth + Prisma adapter)
+// =====================================================================
 
-  createdBy   User   @relation(fields: [createdById], references: [id])
-  createdById String
-
-  @@index([name])
+enum UserRole {
+  USER
+  ADMIN
 }
 
-// Necessary for Next auth
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          UserRole  @default(USER)
+  accounts      Account[]
+  sessions      Session[]
+  orders        Order[]
+}
+
 model Account {
   id                       String  @id @default(cuid())
   userId                   String
   type                     String
   provider                 String
   providerAccountId        String
-  refresh_token            String? // @db.Text
-  access_token             String? // @db.Text
+  refresh_token            String?
+  access_token             String?
   expires_at               Int?
   token_type               String?
   scope                    String?
-  id_token                 String? // @db.Text
+  id_token                 String?
   session_state            String?
   user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   refresh_token_expires_in Int?
@@ -55,21 +61,266 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  posts         Post[]
-}
-
 model VerificationToken {
   identifier String
   token      String   @unique
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// =====================================================================
+// Catalog (seeded from pokemontcg.io)
+// =====================================================================
+
+model Era {
+  id   String @id // e.g. "SV"
+  name String @unique // e.g. "Scarlet & Violet"
+
+  sets CardSet[]
+}
+
+model CardSet {
+  id    String @id // e.g. "swsh3"
+  name  String @unique
+  eraId String
+  era   Era    @relation(fields: [eraId], references: [id])
+
+  cards          Card[]
+  sealedProducts SealedProductCardSet[]
+}
+
+model Artist {
+  id    String @id @default(uuid())
+  name  String
+  cards Card[]
+}
+
+enum FoilType {
+  NON_HOLO
+  HOLO
+  GALAXY_HOLO
+  COSMOS_HOLO
+  LINE_HOLO
+  REVERSE_HOLO
+  STAMPED_REVERSE_HOLO
+  ENERGY_SYMBOL_REVERSE_HOLO
+  MASTER_BALL_REVERSE_HOLO
+  POKEBALL_REVERSE_HOLO
+  SET_LOGO_REVERSE_HOLO
+  COSMOS_REVERSE_HOLO
+  FULL_ART
+  TEXTURED_FULL_ART
+  ALTERNATE_ART
+  SPECIAL_ILLUSTRATION_RARE
+  RAINBOW_RARE
+  GOLD_SECRET_RARE
+  SHINY_HOLO
+  BABY_SHINY
+  SHINY_FULL_ART
+  RADIANT
+  EX_HOLO
+  GX_FULL_ART
+  V_HOLO
+  VMAX_TEXTURED
+  VSTAR_HOLO
+  PRE_RELEASE_STAMPED
+  LEAGUE_PROMO_STAMPED
+  STAFF_PROMO_HOLO
+  CRACKED_ICE_HOLO
+  MCDONALDS_HOLO
+  TOYSRUS_HOLO
+  KFC_HOLO
+  ETCHED_FULL_ART
+  OTHER
+}
+
+model Card {
+  id       String    @id // e.g. "swsh3-136"
+  name     String
+  setId    String
+  set      CardSet   @relation(fields: [setId], references: [id])
+  number   String
+  rarity   String?
+  artistId String
+  artist   Artist    @relation(fields: [artistId], references: [id])
+  foilType FoilType
+  imageUrl String?
+  types    String[] // e.g. ["Fire", "Water"]
+  products Product[]
+
+  @@index([name])
+  @@index([setId])
+}
+
+// =====================================================================
+// Inventory — single Product table with discriminator
+// =====================================================================
+
+enum ProductType {
+  RAW
+  GRADED
+  SEALED
+}
+
+enum Language {
+  ENGLISH
+  JAPANESE
+}
+
+enum CardCondition {
+  NM
+  LP
+  MP
+  HP
+  DMG
+}
+
+enum GradingCompany {
+  PSA
+  BGS
+  CGC
+  SGC
+  ACE
+  OTHER
+}
+
+enum SealedType {
+  BOOSTER_PACK
+  BOOSTER_BOX
+  MINI_BOOSTER_BOX
+  ELITE_TRAINER_BOX
+  ETB_PLUS
+  COLLECTION_BOX
+  PREMIUM_COLLECTION_BOX
+  TIN
+  MINI_TIN
+  LUNCHBOX_TIN
+  BLISTER_PACK
+  CHECKLANE_BLISTER
+  TRIPLE_BLISTER
+  BUILD_AND_BATTLE_BOX
+  BUILD_AND_BATTLE_STADIUM
+  THEME_DECK
+  STARTER_DECK
+  V_BATTLE_DECK
+  VMAX_BATTLE_BOX
+  VSTAR_PREMIUM_COLLECTION
+  SPECIAL_COLLECTION_BOX
+  POKEBALL_TIN
+  ULTRA_PREMIUM_COLLECTION
+  HOLIDAY_CALENDAR
+  MYSTERY_BOX
+  SLEEVE_BOOSTER_PACK
+  PRE_RELEASE_KIT
+  BOX_SET
+  OTHER
+}
+
+// Discriminated single table. Subtype-specific fields are nullable;
+// Zod refinements at the tRPC boundary enforce per-type required fields.
+model Product {
+  id          String      @id @default(uuid())
+  type        ProductType
+  description String?
+  language    Language    @default(ENGLISH)
+  priceCents  Int
+  quantity    Int         @default(0)
+  imageUrl    String? // user-uploaded photo (graded slabs, sealed product)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // RAW + GRADED fields
+  cardId    String?
+  card      Card?          @relation(fields: [cardId], references: [id])
+  condition CardCondition? // RAW only
+
+  // GRADED only
+  gradingCompany GradingCompany?
+  grade          Decimal?        @db.Decimal(3, 1)
+  certNumber     String?         @unique
+  caseCondition  String?
+
+  // SEALED only
+  name        String?
+  sealedType  SealedType?
+  releaseDate DateTime?              @db.Date
+  region      String?
+  sealedSets  SealedProductCardSet[]
+
+  orderItems OrderItem[]
+
+  @@unique([cardId, condition], name: "uk_raw_card_identity")
+  @@index([type])
+  @@index([quantity])
+  @@index([cardId])
+}
+
+model SealedProductCardSet {
+  productId String
+  cardSetId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cardSet   CardSet @relation(fields: [cardSetId], references: [id])
+
+  @@id([productId, cardSetId])
+}
+
+// =====================================================================
+// Orders
+// =====================================================================
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  FAILED
+  CANCELED
+  EXPIRED
+  FULFILLED
+}
+
+model Order {
+  id                    String      @id @default(uuid())
+  orderNumber           String      @unique // e.g. "PHB-7X4K2M"
+  userId                String?
+  user                  User?       @relation(fields: [userId], references: [id])
+  email                 String
+  status                OrderStatus @default(PENDING_PAYMENT)
+  stripePaymentIntentId String?     @unique
+  subtotalCents         Int
+  shippingCents         Int
+  taxCents              Int         @default(0)
+  totalCents            Int
+  shippingAddressJson   Json
+  trackingNumber        String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  paidAt                DateTime?
+  fulfilledAt           DateTime?
+  items                 OrderItem[]
+
+  @@index([status])
+  @@index([email])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id                   String  @id @default(uuid())
+  orderId              String
+  order                Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId            String
+  product              Product @relation(fields: [productId], references: [id])
+  productSnapshotJson  Json // name, type, condition/grade, image, etc. at purchase time
+  priceAtPurchaseCents Int
+  quantity             Int
+
+  @@index([orderId])
+}
+
+// =====================================================================
+// Webhook idempotency
+// =====================================================================
+
+model ProcessedWebhook {
+  stripeEventId String   @id
+  processedAt   DateTime @default(now())
 }
