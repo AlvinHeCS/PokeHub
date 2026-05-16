@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 
 import { useCart } from "~/lib/cart";
 
@@ -33,7 +34,16 @@ export function Header({
             </Link>
           ) : null}
           {signedIn ? (
-            <span className="text-gray-600">{email}</span>
+            <>
+              <span className="text-gray-600">{email}</span>
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: "/signin" })}
+                className="hover:underline"
+              >
+                Sign out
+              </button>
+            </>
           ) : (
             <Link href="/signin" className="hover:underline">
               Sign in
