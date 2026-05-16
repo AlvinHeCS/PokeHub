@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
+// Run server functions in Sydney to co-locate with Supabase (ap-southeast-2).
+export const preferredRegion = "syd1";
+
 const geist = Geist({
   subsets: ["latin"],
   variable: "--font-geist-sans",

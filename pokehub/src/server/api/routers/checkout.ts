@@ -127,7 +127,7 @@ export const checkoutRouter = createTRPCRouter({
 
           const pi = await stripe.paymentIntents.create({
             amount: total,
-            currency: "usd",
+            currency: "aud",
             metadata: { orderId: created.id, orderNumber: created.orderNumber },
             automatic_payment_methods: { enabled: true },
           });

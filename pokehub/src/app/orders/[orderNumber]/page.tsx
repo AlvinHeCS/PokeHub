@@ -1,7 +1,10 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { formatCents } from "~/lib/format";
 import { api } from "~/trpc/server";
+import { ClearCartOnMount } from "./ClearCartOnMount";
+import { PendingPaymentRefresher } from "./PendingPaymentRefresher";
 
 export default async function OrderConfirmationPage({
   params,
@@ -48,15 +51,19 @@ export default async function OrderConfirmationPage({
 
   return (
     <main className="mx-auto max-w-2xl p-6">
+      <ClearCartOnMount />
       <h1 className="text-2xl font-bold">Order {order.orderNumber}</h1>
       <div className="mt-1 text-sm text-gray-600">
         Status: <span className="font-medium">{order.status}</span>
       </div>
 
       {order.status === "PENDING_PAYMENT" ? (
-        <div className="mt-4 rounded border border-yellow-300 bg-yellow-50 p-3 text-sm">
-          Your payment is being confirmed. Refresh this page in a moment.
-        </div>
+        <>
+          <PendingPaymentRefresher />
+          <div className="mt-4 rounded border border-yellow-300 bg-yellow-50 p-3 text-sm">
+            Your payment is being confirmed…
+          </div>
+        </>
       ) : null}
       {order.status === "PAID" || order.status === "FULFILLED" ? (
         <div className="mt-4 rounded border border-green-300 bg-green-50 p-3 text-sm">
@@ -112,6 +119,15 @@ export default async function OrderConfirmationPage({
           value={formatCents(order.totalCents)}
           bold
         />
+      </div>
+
+      <div className="mt-6">
+        <Link
+          href="/shop"
+          className="inline-block rounded bg-blue-600 px-4 py-2 font-medium text-white"
+        >
+          Back to shopping
+        </Link>
       </div>
     </main>
   );

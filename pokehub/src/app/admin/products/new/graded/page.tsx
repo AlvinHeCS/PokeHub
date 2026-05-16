@@ -102,7 +102,7 @@ export default function NewGradedCardPage() {
         />
       </Field>
 
-      <Field label="Price (USD)">
+      <Field label="Price (AUD)">
         <input
           type="number"
           step="0.01"

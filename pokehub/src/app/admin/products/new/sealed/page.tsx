@@ -104,7 +104,7 @@ export default function NewSealedPage() {
       </Field>
 
       <div className="flex gap-4">
-        <Field label="Price (USD)">
+        <Field label="Price (AUD)">
           <input
             type="number"
             step="0.01"
