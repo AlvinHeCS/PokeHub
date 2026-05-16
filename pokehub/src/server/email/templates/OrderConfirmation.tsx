@@ -26,7 +26,7 @@ interface Props {
 }
 
 function formatCents(cents: number) {
-  return `$${(cents / 100).toFixed(2)}`;
+  return `A$${(cents / 100).toFixed(2)}`;
 }
 
 export function OrderConfirmation({
