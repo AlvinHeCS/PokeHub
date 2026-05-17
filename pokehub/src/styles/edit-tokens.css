@@ -1,0 +1,230 @@
+/* ============================================================
+   PokéHub redesign — Editorial Marketplace
+   Warm neutral palette · clean typography · real photo treatments
+   ============================================================ */
+
+:root {
+  --accent: #b8884a; /* oxidized brass */
+  --density: 1;
+}
+
+[data-direction="editorial"][data-theme="light"] {
+  --bg: #f5f1e8; /* warm bone */
+  --bg-alt: #ede8db; /* slightly darker */
+  --paper: #faf6ec; /* card surface */
+  --paper-hi: #ffffff; /* highlights */
+  --ink: #1a1814; /* warm black */
+  --ink-soft: #4a463c;
+  --ink-mute: #8a8478;
+  --line: #d4ccb8;
+  --line-soft: #e6dfd0;
+  --chip: #ede8db;
+
+  --accent: #b8884a; /* brass */
+  --accent-hi: #d4a866;
+  --accent-dk: #8a6232;
+  --ink-accent: #fefcf6;
+
+  --plum: #5a3a52; /* deep wine */
+  --moss: #4a5a3a; /* deep forest */
+  --slate: #3a4a5a; /* deep ocean */
+  --terra: #a8543a; /* terracotta */
+  --gold: #c8a456;
+
+  --positive: #4a7a4a;
+  --warn: #c8843a;
+  --danger: #a83a2a;
+}
+
+[data-direction="editorial"][data-theme="dark"] {
+  --bg: #14110b;
+  --bg-alt: #1d1a12;
+  --paper: #221e15;
+  --paper-hi: #2a2519;
+  --ink: #f4ecd8;
+  --ink-soft: #c8bea6;
+  --ink-mute: #8a8478;
+  --line: #3a3424;
+  --line-soft: #2a2519;
+  --chip: #2a2519;
+
+  --accent: #d4a866;
+  --accent-hi: #e8c488;
+  --accent-dk: #b8884a;
+  --ink-accent: #1a1814;
+
+  --plum: #8a5a82;
+  --moss: #7a8a5a;
+  --slate: #5a7a9a;
+  --terra: #c8784a;
+  --gold: #d4a866;
+
+  --positive: #7aaa6a;
+  --warn: #e8a456;
+  --danger: #d85a4a;
+}
+
+[data-direction="editorial"] {
+  font-family:
+    var(--font-inter),
+    "Söhne",
+    -apple-system,
+    system-ui,
+    sans-serif;
+  --serif: var(--font-fraunces), "Canela", "Caslon", Georgia, serif;
+  --mono: var(--font-jetbrains-mono), "Berkeley Mono", ui-monospace, monospace;
+  background: var(--bg);
+  color: var(--ink);
+  font-feature-settings: "ss01", "cv11";
+}
+
+[data-direction="editorial"] .serif {
+  font-family: var(--serif);
+  font-feature-settings: "ss01";
+  letter-spacing: -0.015em;
+}
+[data-direction="editorial"] .mono {
+  font-family: var(--mono);
+  letter-spacing: 0;
+}
+
+[data-direction="editorial"] .num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum", "ss01";
+}
+
+/* Paper grain — subtle, not noisy */
+[data-direction="editorial"] .grain {
+  position: relative;
+}
+[data-direction="editorial"] .grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image:
+    radial-gradient(rgba(0, 0, 0, 0.025) 1px, transparent 1px),
+    radial-gradient(rgba(0, 0, 0, 0.015) 1px, transparent 1px);
+  background-size:
+    4px 4px,
+    7px 7px;
+  background-position:
+    0 0,
+    2px 3px;
+  mix-blend-mode: multiply;
+}
+
+/* Card with elegant border */
+[data-direction="editorial"] .card-frame {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow:
+    0 1px 0 var(--paper-hi) inset,
+    0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+[data-direction="editorial"] .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--chip);
+  color: var(--ink-soft);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  border: 1px solid var(--line-soft);
+}
+
+[data-direction="editorial"] .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 22px;
+  background: var(--ink);
+  color: var(--bg);
+  border: 0;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  transition:
+    opacity 0.15s,
+    transform 0.15s;
+}
+[data-direction="editorial"] .btn:hover {
+  opacity: 0.9;
+}
+[data-direction="editorial"] .btn.ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+[data-direction="editorial"] .btn.accent {
+  background: var(--accent);
+  color: var(--ink-accent);
+}
+
+/* Hairline divider */
+[data-direction="editorial"] .hairline {
+  height: 1px;
+  background: var(--line);
+}
+
+/* Section labels (caps eyebrow) */
+[data-direction="editorial"] .eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+input,
+select,
+textarea {
+  font: inherit;
+}
+* {
+  box-sizing: border-box;
+}
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Show-on-desktop / show-on-mobile toggles for Home and shared chrome */
+.editorial-mobile-only {
+  display: none;
+}
+@media (max-width: 768px) {
+  .editorial-desktop-only {
+    display: none !important;
+  }
+  .editorial-mobile-only {
+    display: block;
+  }
+  /* Header: collapse nav + search on small screens */
+  .editorial-header {
+    padding: 14px 18px !important;
+    gap: 14px !important;
+  }
+  .editorial-header-nav {
+    display: none !important;
+  }
+  .editorial-header-search {
+    display: none !important;
+  }
+}

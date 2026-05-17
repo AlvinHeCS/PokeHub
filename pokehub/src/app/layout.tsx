@@ -1,7 +1,7 @@
 import "~/styles/globals.css";
 
 import { type Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 
 import { CartDrawer } from "~/app/_components/CartDrawer";
 import { Header } from "~/app/_components/Header";
@@ -17,9 +17,23 @@ export const metadata: Metadata = {
 // Run server functions in Sydney to co-locate with Supabase (ap-southeast-2).
 export const preferredRegion = "syd1";
 
-const geist = Geist({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-geist-sans",
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
 });
 
 export default async function RootLayout({
@@ -27,7 +41,12 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const session = await auth();
   return (
-    <html lang="en" className={`${geist.variable}`}>
+    <html
+      lang="en"
+      data-direction="editorial"
+      data-theme="light"
+      className={`${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable}`}
+    >
       <body>
         <TRPCReactProvider>
           <Header
