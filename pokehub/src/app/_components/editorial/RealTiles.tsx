@@ -50,7 +50,7 @@ export function RealCardTile({
             alt={name}
             fill
             sizes="(min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw"
-            style={{ objectFit: "contain", padding: 6 }}
+            style={{ objectFit: "cover" }}
           />
         ) : (
           <div
