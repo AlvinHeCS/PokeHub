@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 
 import { CardVariantPicker } from "~/app/cards/[cardId]/CardVariantPicker";
+import { I, Icon, Pill } from "~/app/_components/editorial/placeholders";
 import { api } from "~/trpc/server";
 
 export const revalidate = 60;
@@ -48,38 +49,168 @@ export default async function CardDetailPage({
   const { card, variants } = data;
 
   return (
-    <main className="mx-auto grid max-w-4xl gap-8 p-6 md:grid-cols-2">
-      <div>
-        {card.imageUrl ? (
-          <div className="relative aspect-[5/7] w-full">
-            <Image
-              src={card.imageUrl}
-              alt={card.name}
-              fill
-              sizes="(min-width: 768px) 50vw, 100vw"
-              priority
-              className="object-contain"
-            />
-          </div>
-        ) : null}
+    <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
+      <div
+        style={{
+          padding: "20px 32px 0",
+          fontSize: 12,
+          color: "var(--ink-mute)",
+        }}
+        className="card-breadcrumb"
+      >
+        <Link
+          href="/shop"
+          style={{ color: "var(--ink-mute)", textDecoration: "none" }}
+        >
+          Shop
+        </Link>{" "}
+        / <span>{card.set.era.name}</span> / <span>{card.set.name}</span> /{" "}
+        <span style={{ color: "var(--ink)" }}>{card.name}</span>
       </div>
-      <div>
-        <Link href="/shop" className="text-sm underline">
-          ← Back to shop
-        </Link>
-        <h1 className="mt-2 text-3xl font-bold">{card.name}</h1>
-        <div className="mt-1 text-sm text-gray-600">
-          {card.set.era.name} · {card.set.name} · #{card.number}
-          {card.rarity ? ` · ${card.rarity}` : ""}
-        </div>
-        <div className="mt-1 text-sm text-gray-600">
-          Illustrated by {card.artist.name}
+      <div
+        style={{
+          padding: "20px 32px 56px",
+          display: "grid",
+          gridTemplateColumns: "1.1fr 1fr",
+          gap: 56,
+        }}
+        className="card-detail-grid"
+      >
+        {/* Hero */}
+        <div>
+          <div
+            style={{
+              position: "relative",
+              background: "var(--bg-alt)",
+              borderRadius: 8,
+              padding: "56px 32px",
+              overflow: "hidden",
+              display: "grid",
+              placeItems: "center",
+              aspectRatio: "5/6",
+            }}
+          >
+            {card.imageUrl ? (
+              <div
+                style={{
+                  position: "relative",
+                  width: "70%",
+                  aspectRatio: "63 / 88",
+                  filter: "drop-shadow(0 30px 50px rgba(0,0,0,0.3))",
+                }}
+              >
+                <Image
+                  src={card.imageUrl}
+                  alt={card.name}
+                  fill
+                  sizes="(min-width: 768px) 40vw, 80vw"
+                  priority
+                  style={{ objectFit: "contain" }}
+                />
+              </div>
+            ) : null}
+            <div
+              style={{
+                position: "absolute",
+                top: 18,
+                left: 18,
+                display: "flex",
+                gap: 8,
+              }}
+            >
+              {card.rarity ? <Pill>{card.rarity}</Pill> : null}
+              <Pill>
+                {variants.length} variant{variants.length === 1 ? "" : "s"}
+              </Pill>
+            </div>
+          </div>
         </div>
 
-        <div className="mt-6">
-          <h2 className="mb-3 font-semibold">Available</h2>
+        {/* Variant section */}
+        <div>
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              flexWrap: "wrap",
+              marginBottom: 14,
+            }}
+          >
+            {card.rarity ? <Pill>{card.rarity}</Pill> : null}
+            <Pill>{card.set.name}</Pill>
+          </div>
+          <h1
+            className="serif"
+            style={{
+              fontSize: 56,
+              fontWeight: 500,
+              letterSpacing: "-0.035em",
+              lineHeight: 1,
+              margin: 0,
+            }}
+          >
+            {card.name}
+          </h1>
+          <div
+            style={{
+              fontSize: 14,
+              color: "var(--ink-soft)",
+              marginTop: 12,
+            }}
+          >
+            {card.set.era.name} · {card.set.name} · #{card.number}
+            {card.artist ? (
+              <>
+                {" "}
+                · Illustrated by{" "}
+                <span style={{ color: "var(--ink)", fontWeight: 500 }}>
+                  {card.artist.name}
+                </span>
+              </>
+            ) : null}
+          </div>
+
+          <div
+            style={{
+              marginTop: 20,
+              padding: "14px 16px",
+              background: "var(--bg-alt)",
+              border: "1px solid var(--line-soft)",
+              borderRadius: 6,
+              display: "flex",
+              gap: 22,
+              fontSize: 13,
+              color: "var(--ink-soft)",
+              flexWrap: "wrap",
+            }}
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <Icon d={I.shield} size={14} color="var(--accent)" />{" "}
+              Authenticated
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <Icon d={I.truck} size={14} color="var(--accent)" /> Tracked &
+              insured
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <Icon d={I.refresh} size={14} color="var(--accent)" /> 30-day
+              returns
+            </span>
+          </div>
+
           {variants.length === 0 ? (
-            <div className="text-gray-500">No variants in stock right now.</div>
+            <div
+              style={{
+                marginTop: 22,
+                padding: 20,
+                border: "1px dashed var(--line)",
+                borderRadius: 6,
+                color: "var(--ink-mute)",
+                fontSize: 13,
+              }}
+            >
+              No variants in stock right now.
+            </div>
           ) : (
             <CardVariantPicker
               card={{ name: card.name, imageUrl: card.imageUrl }}
@@ -98,6 +229,6 @@ export default async function CardDetailPage({
           )}
         </div>
       </div>
-    </main>
+    </div>
   );
 }
