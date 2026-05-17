@@ -307,6 +307,52 @@ export const productRouter = createTRPCRouter({
       };
     }),
 
+  /**
+   * Home page hero / trending strip. Returns the most expensive in-stock cards
+   * (ordered by minimum listed price, descending) so the front door showcases
+   * grail-tier inventory rather than the cheapest commons.
+   */
+  featured: publicProcedure
+    .input(z.object({ limit: z.number().int().min(1).max(24).default(8) }))
+    .query(async ({ ctx, input }) => {
+      const cardAggregates = await ctx.db.product.groupBy({
+        by: ["cardId"],
+        where: {
+          type: { in: [ProductType.RAW, ProductType.GRADED] },
+          quantity: { gt: 0 },
+          cardId: { not: null },
+        },
+        _min: { priceCents: true },
+      });
+
+      const ranked = cardAggregates
+        .map((row) => ({
+          cardId: row.cardId as string,
+          fromPriceCents: row._min.priceCents ?? 0,
+        }))
+        .sort((a, b) => b.fromPriceCents - a.fromPriceCents)
+        .slice(0, input.limit);
+
+      if (ranked.length === 0) return [];
+
+      const cards = await ctx.db.card.findMany({
+        where: { id: { in: ranked.map((r) => r.cardId) } },
+        include: { set: true },
+      });
+      const byId = new Map(cards.map((c) => [c.id, c]));
+
+      return ranked
+        .map((r) => {
+          const card = byId.get(r.cardId);
+          if (!card) return null;
+          return { card, fromPriceCents: r.fromPriceCents };
+        })
+        .filter(
+          (x): x is { card: (typeof cards)[number]; fromPriceCents: number } =>
+            x !== null,
+        );
+    }),
+
   /** Card detail page: all in-stock variants for a single card. */
   cardVariants: publicProcedure
     .input(z.object({ cardId: z.string() }))
