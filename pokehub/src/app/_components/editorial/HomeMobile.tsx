@@ -1,4 +1,8 @@
-import { CARDS, CardArt, fmt } from "~/app/_components/editorial/placeholders";
+import Link from "next/link";
+
+import { fmt } from "~/app/_components/editorial/placeholders";
+import { RealCardArt } from "~/app/_components/editorial/RealTiles";
+import type { ShopCard, ShopSealed } from "~/app/_components/editorial/ShopLayout";
 
 const SETS: [string, string, string, string][] = [
   ["Tides of Ember", "TOE · 2025", "#1a2a4a", "#c85838"],
@@ -7,15 +11,15 @@ const SETS: [string, string, string, string][] = [
   ["Quietwood", "QWD · 2024", "#1a3a14", "#5a8a3a"],
 ];
 
-// Deterministic, seeded "from" price so SSR + client match.
-function priceFor(id: string): number {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return 2400 + (h % 5000);
-}
-
-export function HomeMobile() {
-  const featured = CARDS[6]!;
+export function HomeMobile({
+  cards,
+  sealed: _sealed,
+}: {
+  cards: ShopCard[];
+  sealed: ShopSealed[];
+}) {
+  const featured = cards[0];
+  const trending = cards.slice(0, 4);
   return (
     <div
       style={{
@@ -75,28 +79,34 @@ export function HomeMobile() {
       </div>
 
       {/* Featured hero card */}
-      <div style={{ padding: "0 18px 22px" }}>
-        <div
-          style={{
-            position: "relative",
-            padding: 24,
-            background: "var(--bg-alt)",
-            borderRadius: 8,
-            display: "grid",
-            placeItems: "center",
-            aspectRatio: "5/6",
-          }}
-        >
+      {featured ? (
+        <div style={{ padding: "0 18px 22px" }}>
           <div
             style={{
-              width: "62%",
-              filter: "drop-shadow(0 20px 30px rgba(0,0,0,0.25))",
+              position: "relative",
+              padding: 24,
+              background: "var(--bg-alt)",
+              borderRadius: 8,
+              display: "grid",
+              placeItems: "center",
+              aspectRatio: "5/6",
             }}
           >
-            <CardArt card={featured} full />
+            <div
+              style={{
+                width: "62%",
+                filter: "drop-shadow(0 20px 30px rgba(0,0,0,0.25))",
+              }}
+            >
+              <RealCardArt
+                imageUrl={featured.imageUrl}
+                alt={featured.name}
+                full
+              />
+            </div>
           </div>
         </div>
-      </div>
+      ) : null}
 
       {/* Sets strip */}
       <div style={{ padding: "0 0 18px" }}>
@@ -190,30 +200,46 @@ export function HomeMobile() {
             gap: 14,
           }}
         >
-          {CARDS.slice(0, 4).map((c) => (
-            <div key={c.id}>
-              <CardArt card={c} />
+          {trending.map((c) => (
+            <Link
+              key={c.id}
+              href={`/cards/${c.id}`}
+              style={{ textDecoration: "none", color: "var(--ink)" }}
+            >
+              <RealCardArt imageUrl={c.imageUrl} alt={c.name} />
               <div style={{ marginTop: 8 }}>
                 <div
                   className="serif"
-                  style={{ fontSize: 13, fontWeight: 500 }}
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 500,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
                 >
                   {c.name}
                 </div>
                 <div
                   className="mono"
-                  style={{ fontSize: 10, color: "var(--ink-mute)" }}
+                  style={{
+                    fontSize: 10,
+                    color: "var(--ink-mute)",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
                 >
-                  {c.set}
+                  {c.setName}
                 </div>
                 <div
                   className="serif num"
                   style={{ fontSize: 14, fontWeight: 600, marginTop: 4 }}
                 >
-                  from {fmt(priceFor(c.id))}
+                  from {fmt(c.fromPriceCents)}
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

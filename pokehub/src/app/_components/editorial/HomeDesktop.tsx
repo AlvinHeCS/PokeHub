@@ -1,16 +1,20 @@
+import Link from "next/link";
+
 import { Footer } from "~/app/_components/editorial/Footer";
 import {
-  CARDS,
-  CardArt,
   fmt,
   I,
   Icon,
-  SEALED,
-  SealedBox,
-  Slab,
-  TypePill,
-  type PlaceholderCard,
 } from "~/app/_components/editorial/placeholders";
+import {
+  RealCardArt,
+  RealSealedFrame,
+  RealSlabFrame,
+} from "~/app/_components/editorial/RealTiles";
+import type {
+  ShopCard,
+  ShopSealed,
+} from "~/app/_components/editorial/ShopLayout";
 
 const ERAS: { name: string; meta: string; a: string; b: string }[] = [
   { name: "Tides of Ember", meta: "TOE · 2025", a: "#1a2a4a", b: "#c85838" },
@@ -45,8 +49,19 @@ const MISSION: { ic: readonly string[] | string; t: string; d: string }[] = [
   },
 ];
 
-export function HomeDesktop() {
-  const featured = CARDS[6]!;
+export function HomeDesktop({
+  cards,
+  sealed,
+}: {
+  cards: ShopCard[];
+  sealed: ShopSealed[];
+}) {
+  const featured = cards[0];
+  const heroSide1 = cards[1];
+  const heroSide2 = cards[2];
+  const featuredSingles = cards.slice(0, 5);
+  const slabCards = cards.slice(0, 4);
+  const sealedTiles = sealed.slice(0, 3);
   return (
     <div
       style={{ background: "var(--bg)", minHeight: "100%" }}
@@ -146,41 +161,57 @@ export function HomeDesktop() {
               borderRadius: 40,
             }}
           />
-          <div
-            style={{
-              width: 300,
-              transform: "rotate(-5deg)",
-              filter: "drop-shadow(0 30px 50px rgba(0,0,0,0.2))",
-            }}
-          >
-            <CardArt card={featured} full />
-          </div>
-          <div
-            style={{
-              position: "absolute",
-              top: 10,
-              right: 20,
-              width: 160,
-              transform: "rotate(8deg)",
-              opacity: 0.95,
-              filter: "drop-shadow(0 16px 30px rgba(0,0,0,0.18))",
-            }}
-          >
-            <CardArt card={CARDS[4]!} />
-          </div>
-          <div
-            style={{
-              position: "absolute",
-              bottom: 30,
-              left: 10,
-              width: 150,
-              transform: "rotate(-13deg)",
-              opacity: 0.9,
-              filter: "drop-shadow(0 12px 24px rgba(0,0,0,0.15))",
-            }}
-          >
-            <CardArt card={CARDS[0]!} />
-          </div>
+          {featured ? (
+            <div
+              style={{
+                width: 300,
+                transform: "rotate(-5deg)",
+                filter: "drop-shadow(0 30px 50px rgba(0,0,0,0.2))",
+              }}
+            >
+              <RealCardArt
+                imageUrl={featured.imageUrl}
+                alt={featured.name}
+                full
+              />
+            </div>
+          ) : null}
+          {heroSide1 ? (
+            <div
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 20,
+                width: 160,
+                transform: "rotate(8deg)",
+                opacity: 0.95,
+                filter: "drop-shadow(0 16px 30px rgba(0,0,0,0.18))",
+              }}
+            >
+              <RealCardArt
+                imageUrl={heroSide1.imageUrl}
+                alt={heroSide1.name}
+              />
+            </div>
+          ) : null}
+          {heroSide2 ? (
+            <div
+              style={{
+                position: "absolute",
+                bottom: 30,
+                left: 10,
+                width: 150,
+                transform: "rotate(-13deg)",
+                opacity: 0.9,
+                filter: "drop-shadow(0 12px 24px rgba(0,0,0,0.15))",
+              }}
+            >
+              <RealCardArt
+                imageUrl={heroSide2.imageUrl}
+                alt={heroSide2.name}
+              />
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -226,7 +257,7 @@ export function HomeDesktop() {
             gap: 28,
           }}
         >
-          {CARDS.slice(0, 5).map((c) => (
+          {featuredSingles.map((c) => (
             <ProductTile key={c.id} card={c} />
           ))}
         </div>
@@ -387,20 +418,30 @@ export function HomeDesktop() {
             gap: 18,
           }}
         >
-          {CARDS.slice(0, 4).map((c, i) => {
+          {slabCards.map((c, i) => {
             const grade = [10, 9, 10, 8.5][i]!;
             const company = (["PSA", "BGS", "PSA", "CGC"] as const)[i]!;
             const label = ["PSA 10", "BGS 9", "PSA 10", "CGC 8.5"][i]!;
             return (
-              <div
+              <Link
                 key={c.id}
+                href={`/cards/${c.id}`}
                 style={{
                   display: "flex",
                   flexDirection: "column",
                   gap: 10,
+                  textDecoration: "none",
+                  color: "var(--ink)",
                 }}
               >
-                <Slab card={c} grade={grade} company={company} small />
+                <RealSlabFrame
+                  imageUrl={c.imageUrl}
+                  alt={c.name}
+                  name={c.name}
+                  grade={grade}
+                  company={company}
+                  small
+                />
                 <div style={{ fontSize: 12 }}>
                   <div style={{ fontWeight: 500 }}>{c.name}</div>
                   <div
@@ -411,16 +452,16 @@ export function HomeDesktop() {
                       marginTop: 2,
                     }}
                   >
-                    {label} · {c.setId}
+                    {label} · {c.setName}
                   </div>
                   <div
                     className="serif num"
                     style={{ fontSize: 15, fontWeight: 600, marginTop: 4 }}
                   >
-                    {fmt(18000 + i * 8400)}
+                    {fmt(c.fromPriceCents + i * 4200)}
                   </div>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
@@ -487,12 +528,18 @@ export function HomeDesktop() {
               gap: 18,
             }}
           >
-            {SEALED.slice(0, 3).map((s) => (
-              <div
+            {sealedTiles.map((s) => (
+              <Link
                 key={s.id}
-                style={{ display: "flex", flexDirection: "column", gap: 10 }}
+                href={`/sealed/${s.id}`}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                  textDecoration: "none",
+                }}
               >
-                <SealedBox product={s} />
+                <RealSealedFrame imageUrl={s.imageUrl} alt={s.name} />
                 <div style={{ fontSize: 12 }}>
                   <div style={{ fontWeight: 500, color: "var(--bg)" }}>
                     {s.name.split("—")[0]?.trim()}
@@ -505,7 +552,7 @@ export function HomeDesktop() {
                       marginTop: 2,
                     }}
                   >
-                    {s.type}
+                    {s.sealedType}
                   </div>
                   <div
                     className="serif num"
@@ -516,10 +563,10 @@ export function HomeDesktop() {
                       color: "var(--accent-hi)",
                     }}
                   >
-                    {fmt(s.price)}
+                    {fmt(s.priceCents)}
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -587,11 +634,20 @@ export function HomeDesktop() {
   );
 }
 
-function ProductTile({ card }: { card: PlaceholderCard }) {
+function ProductTile({ card }: { card: ShopCard }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    <Link
+      href={`/cards/${card.id}`}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 14,
+        textDecoration: "none",
+        color: "var(--ink)",
+      }}
+    >
       <div style={{ position: "relative" }}>
-        <CardArt card={card} />
+        <RealCardArt imageUrl={card.imageUrl} alt={card.name} />
         <button
           type="button"
           aria-label="Save"
@@ -630,29 +686,35 @@ function ProductTile({ card }: { card: PlaceholderCard }) {
               fontSize: 17,
               fontWeight: 500,
               letterSpacing: "-0.015em",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
             {card.name}
           </span>
           <span
             className="mono"
-            style={{ fontSize: 11, color: "var(--ink-mute)" }}
+            style={{
+              fontSize: 11,
+              color: "var(--ink-mute)",
+              flexShrink: 0,
+            }}
           >
             #{card.number}
           </span>
         </div>
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
+            fontSize: 11,
+            color: "var(--ink-mute)",
             marginTop: 4,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
           }}
         >
-          <TypePill type={card.type} size="sm" />
-          <span style={{ fontSize: 11, color: "var(--ink-mute)" }}>
-            {card.set}
-          </span>
+          {card.setName}
         </div>
         <div
           style={{
@@ -673,10 +735,10 @@ function ProductTile({ card }: { card: PlaceholderCard }) {
             FROM
           </span>
           <span className="serif num" style={{ fontSize: 18, fontWeight: 600 }}>
-            {fmt(2400 + (parseInt(card.id.split("-")[1] ?? "0", 10) || 0) * 73)}
+            {fmt(card.fromPriceCents)}
           </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
