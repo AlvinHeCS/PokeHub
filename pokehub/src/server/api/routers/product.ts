@@ -235,30 +235,48 @@ export const productRouter = createTRPCRouter({
       z.object({
         cursor: z.string().optional(),
         limit: z.number().int().min(1).max(60).default(24),
+        type: z.enum(["singles", "graded", "sealed"]).optional(),
       }),
     )
-    .query(async ({ ctx, input: _input }) => {
+    .query(async ({ ctx, input }) => {
+      const includeSingles = !input.type || input.type === "singles";
+      const includeGraded = !input.type || input.type === "graded";
+      const includeSealed = !input.type || input.type === "sealed";
+
+      const cardTypes: ProductType[] = [];
+      if (includeSingles) cardTypes.push(ProductType.RAW);
+      if (includeGraded) cardTypes.push(ProductType.GRADED);
+
       const [cardAggregates, sealedTiles] = await Promise.all([
-        ctx.db.product.groupBy({
-          by: ["cardId"],
-          where: {
-            type: { in: [ProductType.RAW, ProductType.GRADED] },
-            quantity: { gt: 0 },
-            cardId: { not: null },
-          },
-          _min: { priceCents: true },
-        }),
-        ctx.db.product.findMany({
-          where: { type: ProductType.SEALED, quantity: { gt: 0 } },
-          select: {
-            id: true,
-            name: true,
-            sealedType: true,
-            priceCents: true,
-            imageUrl: true,
-          },
-          orderBy: { createdAt: "desc" },
-        }),
+        cardTypes.length
+          ? ctx.db.product.groupBy({
+              by: ["cardId"],
+              where: {
+                type: { in: cardTypes },
+                quantity: { gt: 0 },
+                cardId: { not: null },
+              },
+              _min: { priceCents: true },
+            })
+          : Promise.resolve(
+              [] as Array<{
+                cardId: string | null;
+                _min: { priceCents: number | null };
+              }>,
+            ),
+        includeSealed
+          ? ctx.db.product.findMany({
+              where: { type: ProductType.SEALED, quantity: { gt: 0 } },
+              select: {
+                id: true,
+                name: true,
+                sealedType: true,
+                priceCents: true,
+                imageUrl: true,
+              },
+              orderBy: { createdAt: "desc" },
+            })
+          : Promise.resolve([]),
       ]);
 
       const cardIds = cardAggregates

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import { AccountMenu } from "~/app/_components/editorial/AccountMenu";
 import { I, Icon } from "~/app/_components/editorial/placeholders";
@@ -9,10 +9,9 @@ import { useCart } from "~/lib/cart";
 
 const NAV: { id: string; label: string; href: string }[] = [
   { id: "shop", label: "Shop", href: "/shop" },
-  { id: "singles", label: "Singles", href: "/shop" },
-  { id: "graded", label: "Graded", href: "/shop" },
-  { id: "sealed", label: "Sealed", href: "/shop" },
-  { id: "sets", label: "Sets", href: "/shop" },
+  { id: "singles", label: "Singles", href: "/shop?type=singles" },
+  { id: "graded", label: "Graded", href: "/shop?type=graded" },
+  { id: "sealed", label: "Sealed", href: "/shop?type=sealed" },
 ];
 
 export function Header({
@@ -28,7 +27,15 @@ export function Header({
   const open = useCart((s) => s.openDrawer);
   const itemCount = lines.reduce((s, l) => s + l.quantity, 0);
   const pathname = usePathname();
-  const active = pathname?.startsWith("/shop") ? "shop" : null;
+  const searchParams = useSearchParams();
+  const typeParam = searchParams?.get("type");
+  const active = pathname?.startsWith("/shop")
+    ? typeParam === "singles" ||
+      typeParam === "graded" ||
+      typeParam === "sealed"
+      ? typeParam
+      : "shop"
+    : null;
 
   return (
     <header
