@@ -9,9 +9,12 @@ import { api, HydrateClient } from "~/trpc/server";
 export const revalidate = 60;
 
 export default async function Home() {
-  const data = await api.product.shop({ limit: 24 });
+  const [featured, shopData] = await Promise.all([
+    api.product.featured({ limit: 8 }),
+    api.product.shop({ limit: 24, type: "sealed" }),
+  ]);
 
-  const cards: ShopCard[] = data.cards.map(({ card, fromPriceCents }) => ({
+  const cards: ShopCard[] = featured.map(({ card, fromPriceCents }) => ({
     id: card.id,
     name: card.name,
     number: card.number,
@@ -19,7 +22,7 @@ export default async function Home() {
     imageUrl: card.imageUrl,
     fromPriceCents,
   }));
-  const sealed: ShopSealed[] = data.sealed.map((p) => ({
+  const sealed: ShopSealed[] = shopData.sealed.map((p) => ({
     id: p.id,
     name: p.name ?? "Sealed product",
     sealedType: p.sealedType ?? "",
