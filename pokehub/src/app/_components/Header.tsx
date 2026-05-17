@@ -54,7 +54,6 @@ export function Header({
           color: "var(--ink)",
         }}
       >
-        <Logo />
         <span
           className="serif"
           style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.025em" }}
@@ -132,25 +131,3 @@ export function Header({
   );
 }
 
-function Logo({ size = 28 }: { size?: number }) {
-  return (
-    <div
-      style={{
-        width: size,
-        height: size,
-        background: "var(--ink)",
-        color: "var(--bg)",
-        borderRadius: 6,
-        display: "grid",
-        placeItems: "center",
-        fontFamily: "var(--serif)",
-        fontStyle: "italic",
-        fontWeight: 600,
-        fontSize: size * 0.55,
-        letterSpacing: "-0.04em",
-      }}
-    >
-      P
-    </div>
-  );
-}

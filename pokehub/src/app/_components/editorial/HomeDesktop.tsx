@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { Footer } from "~/app/_components/editorial/Footer";
 import {
   CARDS,
@@ -94,20 +96,13 @@ export function HomeDesktop() {
             quiet, curated shop.
           </p>
           <div style={{ display: "flex", gap: 12, marginTop: 32 }}>
-            <button
-              type="button"
+            <Link
+              href="/shop"
               className="btn"
               style={{ padding: "13px 22px", fontSize: 15 }}
             >
               Browse the shop <Icon d={I.arrowR} size={15} />
-            </button>
-            <button
-              type="button"
-              className="btn ghost"
-              style={{ padding: "13px 22px", fontSize: 15 }}
-            >
-              Sell to us
-            </button>
+            </Link>
           </div>
           <div
             style={{
