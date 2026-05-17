@@ -137,12 +137,12 @@ export function ShopDesktop({
         style={{
           padding: "8px 32px 56px",
           display: "grid",
-          gridTemplateColumns: "260px 1fr",
+          gridTemplateColumns: "260px minmax(0, 1fr)",
           gap: 32,
         }}
       >
         <FilterSidebar />
-        <div>
+        <div style={{ minWidth: 0 }}>
           {cards.length === 0 && sealed.length === 0 ? (
             <div
               style={{
@@ -165,7 +165,7 @@ export function ShopDesktop({
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(5, 1fr)",
+                  gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
                   gap: 24,
                   marginBottom: 48,
                 }}
@@ -191,7 +191,7 @@ export function ShopDesktop({
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
+                  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
                   gap: 24,
                 }}
               >
