@@ -61,20 +61,18 @@ export function HomeMobile({
           Singles, slabs, and sealed product. Tracked &amp; insured.
         </p>
         <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
-          <button
-            type="button"
+          <Link
+            href="/shop"
             className="btn"
-            style={{ padding: "12px 16px", flex: 1, fontSize: 14 }}
+            style={{
+              padding: "12px 16px",
+              flex: 1,
+              fontSize: 14,
+              textAlign: "center",
+            }}
           >
             Browse shop
-          </button>
-          <button
-            type="button"
-            className="btn ghost"
-            style={{ padding: "12px 16px", fontSize: 14 }}
-          >
-            Sell
-          </button>
+          </Link>
         </div>
       </div>
 
