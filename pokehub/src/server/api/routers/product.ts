@@ -327,7 +327,7 @@ export const productRouter = createTRPCRouter({
 
       const ranked = cardAggregates
         .map((row) => ({
-          cardId: row.cardId as string,
+          cardId: row.cardId!,
           fromPriceCents: row._min.priceCents ?? 0,
         }))
         .sort((a, b) => b.fromPriceCents - a.fromPriceCents)
