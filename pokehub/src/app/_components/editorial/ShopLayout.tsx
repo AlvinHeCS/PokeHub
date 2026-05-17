@@ -21,14 +21,25 @@ export interface ShopSealed {
   imageUrl: string | null;
 }
 
+export type ShopType = "singles" | "graded" | "sealed";
+
+const TITLES: Record<ShopType, { eyebrow: string; heading: string }> = {
+  singles: { eyebrow: "Raw singles", heading: "Singles in stock" },
+  graded: { eyebrow: "Graded slabs", heading: "Graded in stock" },
+  sealed: { eyebrow: "Sealed product", heading: "Sealed in stock" },
+};
+
 export function ShopDesktop({
   cards,
   sealed,
+  type,
 }: {
   cards: ShopCard[];
   sealed: ShopSealed[];
+  type?: ShopType;
 }) {
   const total = cards.length + sealed.length;
+  const titles = type ? TITLES[type] : null;
   return (
     <div
       style={{ background: "var(--bg)", minHeight: "100%" }}
@@ -45,7 +56,7 @@ export function ShopDesktop({
         }}
       >
         <div>
-          <span className="eyebrow">The catalog</span>
+          <span className="eyebrow">{titles?.eyebrow ?? "The catalog"}</span>
           <h1
             className="serif"
             style={{
@@ -55,17 +66,35 @@ export function ShopDesktop({
               margin: "6px 0 4px",
             }}
           >
-            Everything in stock
+            {titles?.heading ?? "Everything in stock"}
           </h1>
           <div style={{ fontSize: 13, color: "var(--ink-soft)" }}>
-            <span style={{ color: "var(--ink)", fontWeight: 500 }}>
-              {cards.length.toLocaleString()}
-            </span>{" "}
-            singles ·{" "}
-            <span style={{ color: "var(--ink)", fontWeight: 500 }}>
-              {sealed.length.toLocaleString()}
-            </span>{" "}
-            sealed
+            {type === "sealed" ? (
+              <>
+                <span style={{ color: "var(--ink)", fontWeight: 500 }}>
+                  {sealed.length.toLocaleString()}
+                </span>{" "}
+                sealed
+              </>
+            ) : type ? (
+              <>
+                <span style={{ color: "var(--ink)", fontWeight: 500 }}>
+                  {cards.length.toLocaleString()}
+                </span>{" "}
+                {type === "graded" ? "graded" : "singles"}
+              </>
+            ) : (
+              <>
+                <span style={{ color: "var(--ink)", fontWeight: 500 }}>
+                  {cards.length.toLocaleString()}
+                </span>{" "}
+                singles ·{" "}
+                <span style={{ color: "var(--ink)", fontWeight: 500 }}>
+                  {sealed.length.toLocaleString()}
+                </span>{" "}
+                sealed
+              </>
+            )}
           </div>
         </div>
         <select style={selectStyle()} defaultValue="curated">
@@ -141,8 +170,9 @@ export function ShopDesktop({
           gap: 32,
         }}
       >
-        <FilterSidebar />
+        <FilterSidebar hideProductType={Boolean(type)} />
         <div style={{ minWidth: 0 }}>
+
           {cards.length === 0 && sealed.length === 0 ? (
             <div
               style={{
@@ -161,7 +191,10 @@ export function ShopDesktop({
 
           {cards.length > 0 ? (
             <>
-              <SectionHeader title="Singles" count={cards.length} />
+              <SectionHeader
+                title={type === "graded" ? "Graded" : "Singles"}
+                count={cards.length}
+              />
               <div
                 style={{
                   display: "grid",
@@ -231,10 +264,13 @@ export function ShopDesktop({
 export function ShopMobile({
   cards,
   sealed,
+  type,
 }: {
   cards: ShopCard[];
   sealed: ShopSealed[];
+  type?: ShopType;
 }) {
+  const titles = type ? TITLES[type] : null;
   return (
     <div
       style={{ background: "var(--bg)", minHeight: "100%" }}
@@ -291,11 +327,25 @@ export function ShopMobile({
               letterSpacing: "-0.025em",
             }}
           >
-            {cards.length.toLocaleString()} singles
+            {type === "sealed"
+              ? `${sealed.length.toLocaleString()} sealed`
+              : type === "graded"
+                ? `${cards.length.toLocaleString()} graded`
+                : `${cards.length.toLocaleString()} singles`}
           </h2>
-          <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 2 }}>
-            + {sealed.length} sealed
-          </div>
+          {!type ? (
+            <div
+              style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 2 }}
+            >
+              + {sealed.length} sealed
+            </div>
+          ) : titles ? (
+            <div
+              style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 2 }}
+            >
+              {titles.eyebrow}
+            </div>
+          ) : null}
         </div>
         <button
           type="button"
@@ -384,14 +434,16 @@ function SectionHeader({ title, count }: { title: string; count: number }) {
   );
 }
 
-function FilterSidebar() {
+function FilterSidebar({ hideProductType = false }: { hideProductType?: boolean }) {
   return (
     <aside>
-      <FilterGroup title="Product type">
-        <CheckRow label="Raw single" active />
-        <CheckRow label="Graded slab" />
-        <CheckRow label="Sealed product" />
-      </FilterGroup>
+      {hideProductType ? null : (
+        <FilterGroup title="Product type">
+          <CheckRow label="Raw single" active />
+          <CheckRow label="Graded slab" />
+          <CheckRow label="Sealed product" />
+        </FilterGroup>
+      )}
       <FilterGroup title="Era">
         <CheckRow label="Scarlet Era" active />
         <CheckRow label="Sword & Shield" />
