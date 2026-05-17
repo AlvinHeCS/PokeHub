@@ -4,6 +4,11 @@ import { fmt } from "~/app/_components/editorial/placeholders";
 import { RealCardArt } from "~/app/_components/editorial/RealTiles";
 import type { ShopCard, ShopSealed } from "~/app/_components/editorial/ShopLayout";
 
+const HERO_FEATURED = {
+  imageUrl: "https://images.pokemontcg.io/swsh7/215_hires.png",
+  alt: "Umbreon VMAX Alt Art — Evolving Skies",
+};
+
 const SETS: [string, string, string, string][] = [
   ["Tides of Ember", "TOE · 2025", "#1a2a4a", "#c85838"],
   ["Hollowveil", "HLV · 2024", "#2a1a4a", "#7a4aa8"],
@@ -18,7 +23,7 @@ export function HomeMobile({
   cards: ShopCard[];
   sealed: ShopSealed[];
 }) {
-  const featured = cards[0];
+  const featured = HERO_FEATURED;
   const trending = cards.slice(0, 4);
   return (
     <div
@@ -100,7 +105,7 @@ export function HomeMobile({
             >
               <RealCardArt
                 imageUrl={featured.imageUrl}
-                alt={featured.name}
+                alt={featured.alt}
                 full
               />
             </div>

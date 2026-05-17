@@ -16,6 +16,21 @@ import type {
   ShopSealed,
 } from "~/app/_components/editorial/ShopLayout";
 
+const HERO_CARDS: { imageUrl: string; alt: string }[] = [
+  {
+    imageUrl: "https://images.pokemontcg.io/swsh7/215_hires.png",
+    alt: "Umbreon VMAX Alt Art — Evolving Skies",
+  },
+  {
+    imageUrl: "https://images.pokemontcg.io/swsh12/186_hires.png",
+    alt: "Lugia V Alt Art — Silver Tempest",
+  },
+  {
+    imageUrl: "https://images.pokemontcg.io/swsh11/186_hires.png",
+    alt: "Giratina V Alt Art — Lost Origin",
+  },
+];
+
 const ERAS: { name: string; meta: string; a: string; b: string }[] = [
   { name: "Tides of Ember", meta: "TOE · 2025", a: "#1a2a4a", b: "#c85838" },
   { name: "Hollowveil", meta: "HLV · 2024", a: "#2a1a4a", b: "#7a4aa8" },
@@ -56,9 +71,7 @@ export function HomeDesktop({
   cards: ShopCard[];
   sealed: ShopSealed[];
 }) {
-  const featured = cards[0];
-  const heroSide1 = cards[1];
-  const heroSide2 = cards[2];
+  const [featured, heroSide1, heroSide2] = HERO_CARDS;
   const featuredSingles = cards.slice(0, 5);
   const slabCards = cards.slice(0, 4);
   const sealedTiles = sealed.slice(0, 3);
@@ -169,7 +182,7 @@ export function HomeDesktop({
             >
               <RealCardArt
                 imageUrl={featured.imageUrl}
-                alt={featured.name}
+                alt={featured.alt}
                 full
               />
             </div>
@@ -188,7 +201,7 @@ export function HomeDesktop({
             >
               <RealCardArt
                 imageUrl={heroSide1.imageUrl}
-                alt={heroSide1.name}
+                alt={heroSide1.alt}
               />
             </div>
           ) : null}
@@ -206,7 +219,7 @@ export function HomeDesktop({
             >
               <RealCardArt
                 imageUrl={heroSide2.imageUrl}
-                alt={heroSide2.name}
+                alt={heroSide2.alt}
               />
             </div>
           ) : null}
