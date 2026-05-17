@@ -26,6 +26,8 @@ export function HomeMobile({
         background: "var(--bg)",
         minHeight: "100%",
         color: "var(--ink)",
+        maxWidth: "100vw",
+        overflowX: "hidden",
       }}
       className="editorial-mobile-only"
     >
