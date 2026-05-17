@@ -1,11 +1,36 @@
 import { HomeDesktop } from "~/app/_components/editorial/HomeDesktop";
 import { HomeMobile } from "~/app/_components/editorial/HomeMobile";
+import type {
+  ShopCard,
+  ShopSealed,
+} from "~/app/_components/editorial/ShopLayout";
+import { api, HydrateClient } from "~/trpc/server";
 
-export default function Home() {
+export const revalidate = 60;
+
+export default async function Home() {
+  const data = await api.product.shop({ limit: 24 });
+
+  const cards: ShopCard[] = data.cards.map(({ card, fromPriceCents }) => ({
+    id: card.id,
+    name: card.name,
+    number: card.number,
+    setName: card.set.name,
+    imageUrl: card.imageUrl,
+    fromPriceCents,
+  }));
+  const sealed: ShopSealed[] = data.sealed.map((p) => ({
+    id: p.id,
+    name: p.name ?? "Sealed product",
+    sealedType: p.sealedType ?? "",
+    priceCents: p.priceCents,
+    imageUrl: p.imageUrl,
+  }));
+
   return (
-    <>
-      <HomeDesktop />
-      <HomeMobile />
-    </>
+    <HydrateClient>
+      <HomeDesktop cards={cards} sealed={sealed} />
+      <HomeMobile cards={cards} sealed={sealed} />
+    </HydrateClient>
   );
 }
