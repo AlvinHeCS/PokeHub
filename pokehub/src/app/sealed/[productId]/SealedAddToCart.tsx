@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { fmt, I, Icon } from "~/app/_components/editorial/placeholders";
 import { useCart } from "~/lib/cart";
 
 export function SealedAddToCart({
@@ -20,21 +21,70 @@ export function SealedAddToCart({
   const [qty, setQty] = useState(1);
 
   if (product.quantity === 0) {
-    return <div className="mt-6 text-gray-500">Out of stock.</div>;
+    return (
+      <div
+        style={{
+          marginTop: 18,
+          padding: 18,
+          background: "var(--bg-alt)",
+          border: "1px solid var(--line)",
+          borderRadius: 6,
+          fontSize: 14,
+          color: "var(--ink-mute)",
+        }}
+      >
+        Out of stock.
+      </div>
+    );
+  }
+
+  function changeQty(next: number) {
+    setQty(Math.max(1, Math.min(product.quantity, next)));
   }
 
   return (
-    <div className="mt-6 flex items-center gap-3">
-      <input
-        type="number"
-        min={1}
-        max={product.quantity}
-        value={qty}
-        onChange={(e) =>
-          setQty(Math.max(1, Math.min(product.quantity, parseInt(e.target.value, 10) || 1)))
-        }
-        className="w-20 rounded border p-2"
-      />
+    <div style={{ marginTop: 18, display: "flex", gap: 10 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          border: "1px solid var(--line)",
+          borderRadius: 4,
+          background: "var(--paper)",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => changeQty(qty - 1)}
+          aria-label="Decrease quantity"
+          style={{
+            padding: "12px 14px",
+            background: "transparent",
+            border: 0,
+            color: "var(--ink)",
+            cursor: "pointer",
+          }}
+        >
+          −
+        </button>
+        <span style={{ padding: "0 14px", fontWeight: 500, fontSize: 15 }}>
+          {qty}
+        </span>
+        <button
+          type="button"
+          onClick={() => changeQty(qty + 1)}
+          aria-label="Increase quantity"
+          style={{
+            padding: "12px 14px",
+            background: "transparent",
+            border: 0,
+            color: "var(--ink)",
+            cursor: "pointer",
+          }}
+        >
+          +
+        </button>
+      </div>
       <button
         type="button"
         onClick={() =>
@@ -47,9 +97,11 @@ export function SealedAddToCart({
             quantity: qty,
           })
         }
-        className="flex-1 rounded bg-blue-600 px-4 py-3 font-semibold text-white"
+        className="btn"
+        style={{ flex: 1, padding: "12px 20px", fontSize: 15 }}
       >
-        Add to cart
+        <Icon d={I.bag} size={15} /> Add to bag ·{" "}
+        {fmt(product.priceCents * qty)}
       </button>
     </div>
   );
