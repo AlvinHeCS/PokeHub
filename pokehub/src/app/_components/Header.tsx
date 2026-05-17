@@ -1,9 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
+import { AccountMenu } from "~/app/_components/editorial/AccountMenu";
+import { I, Icon } from "~/app/_components/editorial/placeholders";
 import { useCart } from "~/lib/cart";
+
+const NAV: { id: string; label: string; href: string }[] = [
+  { id: "shop", label: "Shop", href: "/shop" },
+  { id: "singles", label: "Singles", href: "/shop" },
+  { id: "graded", label: "Graded", href: "/shop" },
+  { id: "sealed", label: "Sealed", href: "/shop" },
+  { id: "sets", label: "Sets", href: "/shop" },
+];
 
 export function Header({
   signedIn,
@@ -17,47 +27,130 @@ export function Header({
   const lines = useCart((s) => s.lines);
   const open = useCart((s) => s.openDrawer);
   const itemCount = lines.reduce((s, l) => s + l.quantity, 0);
+  const pathname = usePathname();
+  const active = pathname?.startsWith("/shop") ? "shop" : null;
 
   return (
-    <header className="border-b">
-      <div className="mx-auto flex max-w-6xl items-center justify-between p-4">
-        <Link href="/" className="text-xl font-bold">
-          PokeHub
-        </Link>
-        <nav className="flex items-center gap-4 text-sm">
-          <Link href="/shop" className="hover:underline">
-            Shop
-          </Link>
-          {isAdmin ? (
-            <Link href="/admin" className="hover:underline">
-              Admin
-            </Link>
-          ) : null}
-          {signedIn ? (
-            <>
-              <span className="text-gray-600">{email}</span>
-              <button
-                type="button"
-                onClick={() => signOut({ callbackUrl: "/signin" })}
-                className="hover:underline"
-              >
-                Sign out
-              </button>
-            </>
-          ) : (
-            <Link href="/signin" className="hover:underline">
-              Sign in
-            </Link>
-          )}
-          <button
-            type="button"
-            onClick={open}
-            className="rounded border px-3 py-1 hover:bg-gray-50"
+    <header
+      style={{
+        background: "var(--bg)",
+        borderBottom: "1px solid var(--line)",
+        padding: "18px 32px",
+        display: "flex",
+        alignItems: "center",
+        gap: 28,
+        position: "relative",
+        zIndex: 5,
+      }}
+      className="editorial-header"
+    >
+      <Link
+        href="/"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          textDecoration: "none",
+          color: "var(--ink)",
+        }}
+      >
+        <Logo />
+        <span
+          className="serif"
+          style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.025em" }}
+        >
+          PokéHub
+        </span>
+      </Link>
+      <nav
+        style={{ display: "flex", gap: 24, fontSize: 14, marginLeft: 16 }}
+        className="editorial-header-nav"
+      >
+        {NAV.map((item) => (
+          <Link
+            key={item.id}
+            href={item.href}
+            style={{
+              color: active === item.id ? "var(--ink)" : "var(--ink-soft)",
+              textDecoration: "none",
+              fontWeight: active === item.id ? 500 : 400,
+              position: "relative",
+              paddingBottom: 2,
+              borderBottom:
+                active === item.id
+                  ? "1px solid var(--ink)"
+                  : "1px solid transparent",
+            }}
           >
-            Cart ({itemCount})
-          </button>
-        </nav>
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+      <div
+        style={{
+          marginLeft: "auto",
+          flex: "0 1 320px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          background: "var(--paper)",
+          border: "1px solid var(--line)",
+          borderRadius: 6,
+          padding: "8px 12px",
+        }}
+        className="editorial-header-search"
+      >
+        <Icon d={I.search} size={15} color="var(--ink-mute)" />
+        <span style={{ fontSize: 13, color: "var(--ink-mute)" }}>
+          Search 23,419 cards
+        </span>
+        <span
+          className="mono"
+          style={{
+            marginLeft: "auto",
+            fontSize: 10,
+            color: "var(--ink-mute)",
+            padding: "1px 5px",
+            border: "1px solid var(--line)",
+            borderRadius: 3,
+          }}
+        >
+          ⌘K
+        </span>
       </div>
+      <AccountMenu signedIn={signedIn} email={email} isAdmin={isAdmin} />
+      <button
+        type="button"
+        onClick={open}
+        className="btn"
+        style={{ padding: "9px 16px" }}
+      >
+        <Icon d={I.bag} size={15} />
+        Bag · {itemCount}
+      </button>
     </header>
+  );
+}
+
+function Logo({ size = 28 }: { size?: number }) {
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        background: "var(--ink)",
+        color: "var(--bg)",
+        borderRadius: 6,
+        display: "grid",
+        placeItems: "center",
+        fontFamily: "var(--serif)",
+        fontStyle: "italic",
+        fontWeight: 600,
+        fontSize: size * 0.55,
+        letterSpacing: "-0.04em",
+      }}
+    >
+      P
+    </div>
   );
 }
