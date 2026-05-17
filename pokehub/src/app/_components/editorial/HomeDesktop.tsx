@@ -64,7 +64,12 @@ export function HomeDesktop({
   const sealedTiles = sealed.slice(0, 3);
   return (
     <div
-      style={{ background: "var(--bg)", minHeight: "100%" }}
+      style={{
+        background: "var(--bg)",
+        minHeight: "100%",
+        maxWidth: "100vw",
+        overflowX: "hidden",
+      }}
       className="editorial-desktop-only"
     >
       {/* ===== Hero ===== */}
