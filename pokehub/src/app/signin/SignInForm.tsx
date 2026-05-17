@@ -3,6 +3,8 @@
 import { signIn } from "next-auth/react";
 import { useState, type FormEvent } from "react";
 
+import { I, Icon } from "~/app/_components/editorial/placeholders";
+
 export function SignInForm({
   callbackUrl,
   initialError,
@@ -38,63 +40,135 @@ export function SignInForm({
   }
 
   return (
-    <div className="space-y-6">
-      <form onSubmit={onSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="email" className="mb-1 block text-sm font-medium">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
-            required
-            className="w-full rounded border px-3 py-2"
-          />
-        </div>
-        <div>
-          <label htmlFor="password" className="mb-1 block text-sm font-medium">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
-            required
-            className="w-full rounded border px-3 py-2"
-          />
-        </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+      <form
+        onSubmit={onSubmit}
+        style={{ display: "flex", flexDirection: "column", gap: 14 }}
+      >
+        <LightField
+          label="Email"
+          id="email"
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={setEmail}
+          required
+        />
+        <LightField
+          label="Password"
+          id="password"
+          type="password"
+          autoComplete="current-password"
+          value={password}
+          onChange={setPassword}
+          required
+        />
         {error ? (
-          <p role="alert" className="text-sm text-red-600">
+          <p
+            role="alert"
+            style={{ color: "var(--danger)", fontSize: 13, margin: 0 }}
+          >
             {error}
           </p>
         ) : null}
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded bg-black px-4 py-2 text-white hover:bg-gray-800 disabled:opacity-50"
+          className="btn"
+          style={{
+            padding: "12px 18px",
+            fontSize: 15,
+            opacity: submitting ? 0.6 : 1,
+          }}
         >
-          {submitting ? "Signing in..." : "Sign in"}
+          {submitting ? "Signing in…" : "Sign in"}{" "}
+          <Icon d={I.arrowR} size={14} />
         </button>
       </form>
 
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-gray-200" />
-        <span className="text-xs uppercase text-gray-500">or</span>
-        <div className="h-px flex-1 bg-gray-200" />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          color: "var(--ink-mute)",
+          fontSize: 11,
+          letterSpacing: "0.12em",
+        }}
+      >
+        <div style={{ flex: 1, height: 1, background: "var(--line)" }} /> OR{" "}
+        <div style={{ flex: 1, height: 1, background: "var(--line)" }} />
       </div>
 
       <button
         type="button"
         onClick={() => signIn("google", { callbackUrl: target })}
-        className="w-full rounded border px-4 py-2 hover:bg-gray-50"
+        className="btn ghost"
+        style={{
+          padding: "11px 14px",
+          fontSize: 14,
+          justifyContent: "center",
+        }}
       >
+        <span
+          style={{
+            width: 14,
+            height: 14,
+            background:
+              "linear-gradient(45deg,#4285f4,#34a853,#fbbc05,#ea4335)",
+            borderRadius: 3,
+          }}
+        />{" "}
         Continue with Google
       </button>
     </div>
+  );
+}
+
+function LightField({
+  label,
+  id,
+  type = "text",
+  autoComplete,
+  value,
+  onChange,
+  required,
+}: {
+  label: string;
+  id: string;
+  type?: string;
+  autoComplete?: string;
+  value: string;
+  onChange: (v: string) => void;
+  required?: boolean;
+}) {
+  return (
+    <label htmlFor={id} style={{ display: "block" }}>
+      <div
+        className="eyebrow"
+        style={{ fontSize: 10, marginBottom: 8, color: "var(--ink-soft)" }}
+      >
+        {label}
+      </div>
+      <input
+        id={id}
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        autoComplete={autoComplete}
+        required={required}
+        style={{
+          width: "100%",
+          background: "var(--bg)",
+          border: "1px solid var(--line)",
+          borderRadius: 4,
+          padding: "11px 14px",
+          fontSize: 14,
+          fontFamily: "inherit",
+          color: "var(--ink)",
+          outline: "none",
+        }}
+      />
+    </label>
   );
 }
