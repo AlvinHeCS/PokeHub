@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useState, type FormEvent } from "react";
 
+import { I, Icon } from "~/app/_components/editorial/placeholders";
 import { signupAction } from "./actions";
 
 export function SignUpForm({ callbackUrl }: { callbackUrl?: string }) {
@@ -57,92 +58,154 @@ export function SignUpForm({ callbackUrl }: { callbackUrl?: string }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="name" className="mb-1 block text-sm font-medium">
-          Name
-        </label>
-        <input
-          id="name"
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          autoComplete="name"
-          required
-          className="w-full rounded border px-3 py-2"
-        />
-      </div>
-      <div>
-        <label htmlFor="email" className="mb-1 block text-sm font-medium">
-          Email
-        </label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          required
-          aria-invalid={fieldError === "email"}
-          className="w-full rounded border px-3 py-2"
-        />
-      </div>
-      <div>
-        <label htmlFor="password" className="mb-1 block text-sm font-medium">
-          Password
-        </label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="new-password"
-          minLength={8}
-          required
-          aria-invalid={fieldError === "password"}
-          className="w-full rounded border px-3 py-2"
-        />
-        <p className="mt-1 text-xs text-gray-500">At least 8 characters.</p>
-      </div>
-      <div>
-        <label
-          htmlFor="confirmPassword"
-          className="mb-1 block text-sm font-medium"
-        >
-          Confirm password
-        </label>
-        <input
-          id="confirmPassword"
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          autoComplete="new-password"
-          required
-          aria-invalid={fieldError === "confirmPassword"}
-          className="w-full rounded border px-3 py-2"
-        />
-      </div>
-      <label className="flex items-start gap-2 text-sm">
+    <form
+      onSubmit={onSubmit}
+      style={{ display: "flex", flexDirection: "column", gap: 14 }}
+    >
+      <DarkField
+        label="Full name"
+        id="name"
+        autoComplete="name"
+        value={name}
+        onChange={setName}
+        required
+      />
+      <DarkField
+        label="Email"
+        id="email"
+        type="email"
+        autoComplete="email"
+        value={email}
+        onChange={setEmail}
+        required
+        invalid={fieldError === "email"}
+      />
+      <DarkField
+        label="Password (min 8 chars)"
+        id="password"
+        type="password"
+        autoComplete="new-password"
+        value={password}
+        onChange={setPassword}
+        minLength={8}
+        required
+        invalid={fieldError === "password"}
+      />
+      <DarkField
+        label="Confirm password"
+        id="confirmPassword"
+        type="password"
+        autoComplete="new-password"
+        value={confirmPassword}
+        onChange={setConfirmPassword}
+        required
+        invalid={fieldError === "confirmPassword"}
+      />
+      <label
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          gap: 10,
+          fontSize: 12,
+          color: "rgba(255,255,255,0.75)",
+          lineHeight: 1.55,
+          cursor: "pointer",
+        }}
+      >
         <input
           type="checkbox"
           checked={marketingOptIn}
           onChange={(e) => setMarketingOptIn(e.target.checked)}
-          className="mt-1"
+          style={{ marginTop: 3 }}
         />
-        <span>Receive promotions and product updates by email</span>
+        <span>
+          Send me occasional emails about new drops, sales, and sealed product
+          restocks.
+        </span>
       </label>
       {error ? (
-        <p role="alert" className="text-sm text-red-600">
+        <p
+          role="alert"
+          style={{
+            color: "var(--accent-hi)",
+            fontSize: 13,
+            margin: 0,
+          }}
+        >
           {error}
         </p>
       ) : null}
       <button
         type="submit"
         disabled={submitting}
-        className="w-full rounded bg-black px-4 py-2 text-white hover:bg-gray-800 disabled:opacity-50"
+        className="btn accent"
+        style={{
+          padding: "12px 18px",
+          fontSize: 15,
+          opacity: submitting ? 0.6 : 1,
+        }}
       >
-        {submitting ? "Creating account..." : "Create account"}
+        {submitting ? "Creating account…" : "Create account"}{" "}
+        <Icon d={I.arrowR} size={14} />
       </button>
     </form>
+  );
+}
+
+function DarkField({
+  label,
+  id,
+  type = "text",
+  autoComplete,
+  value,
+  onChange,
+  required,
+  minLength,
+  invalid,
+}: {
+  label: string;
+  id: string;
+  type?: string;
+  autoComplete?: string;
+  value: string;
+  onChange: (v: string) => void;
+  required?: boolean;
+  minLength?: number;
+  invalid?: boolean;
+}) {
+  return (
+    <label htmlFor={id} style={{ display: "block" }}>
+      <div
+        className="eyebrow"
+        style={{
+          fontSize: 10,
+          marginBottom: 8,
+          color: "rgba(255,255,255,0.55)",
+        }}
+      >
+        {label}
+      </div>
+      <input
+        id={id}
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        autoComplete={autoComplete}
+        required={required}
+        minLength={minLength}
+        aria-invalid={invalid}
+        style={{
+          width: "100%",
+          background: "rgba(255,255,255,0.06)",
+          border: `1px solid ${invalid ? "var(--accent-hi)" : "rgba(255,255,255,0.18)"}`,
+          borderRadius: 4,
+          padding: "11px 14px",
+          fontSize: 14,
+          fontFamily: "inherit",
+          color: "var(--bg)",
+          outline: "none",
+        }}
+      />
+    </label>
   );
 }

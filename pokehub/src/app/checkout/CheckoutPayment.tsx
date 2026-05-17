@@ -7,6 +7,7 @@ import {
 } from "@stripe/react-stripe-js";
 import { useState } from "react";
 
+import { I, Icon } from "~/app/_components/editorial/placeholders";
 import { env } from "~/env";
 
 export function CheckoutPayment({
@@ -42,17 +43,56 @@ export function CheckoutPayment({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-lg font-semibold">Payment</h2>
-      <PaymentElement />
+    <form
+      onSubmit={handleSubmit}
+      style={{ display: "flex", flexDirection: "column", gap: 18 }}
+    >
+      <h2
+        className="serif"
+        style={{
+          fontSize: 26,
+          fontWeight: 500,
+          letterSpacing: "-0.025em",
+          marginTop: 0,
+        }}
+      >
+        Payment
+      </h2>
+      <p
+        style={{
+          fontSize: 13,
+          color: "var(--ink-soft)",
+          marginTop: -8,
+        }}
+      >
+        Secured by Stripe. Cards, Apple Pay, and Google Pay accepted.
+      </p>
+      <div
+        style={{
+          background: "var(--bg)",
+          border: "1px solid var(--line)",
+          borderRadius: 6,
+          padding: 16,
+        }}
+      >
+        <PaymentElement />
+      </div>
       <button
         type="submit"
         disabled={!stripe || submitting}
-        className="rounded bg-blue-600 px-6 py-3 font-semibold text-white disabled:opacity-50"
+        className="btn"
+        style={{
+          padding: "14px 22px",
+          fontSize: 15,
+          opacity: !stripe || submitting ? 0.6 : 1,
+        }}
       >
-        {submitting ? "Processing…" : "Pay"}
+        {submitting ? "Processing…" : "Pay securely"}{" "}
+        <Icon d={I.arrowR} size={14} />
       </button>
-      {error ? <div className="text-red-600">{error}</div> : null}
+      {error ? (
+        <div style={{ color: "var(--danger)", fontSize: 13 }}>{error}</div>
+      ) : null}
     </form>
   );
 }

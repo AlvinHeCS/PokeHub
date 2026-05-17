@@ -16,22 +16,67 @@ export default async function SignInPage({
   if (session?.user) redirect(callbackUrl ?? "/");
 
   return (
-    <main className="mx-auto max-w-md p-6">
-      <h1 className="mb-6 text-2xl font-bold">Sign in</h1>
-      <SignInForm callbackUrl={callbackUrl} initialError={error} />
-      <p className="mt-6 text-sm text-gray-600">
-        Don&apos;t have an account?{" "}
-        <Link
-          href={
-            callbackUrl
-              ? `/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`
-              : "/signup"
-          }
-          className="font-medium text-blue-600 hover:underline"
+    <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
+      <main
+        style={{
+          maxWidth: 480,
+          margin: "0 auto",
+          padding: "60px 32px 80px",
+        }}
+      >
+        <div
+          style={{
+            background: "var(--paper)",
+            border: "1px solid var(--line)",
+            borderRadius: 8,
+            padding: 36,
+          }}
         >
-          Sign up
-        </Link>
-      </p>
-    </main>
+          <span className="eyebrow">Returning</span>
+          <h1
+            className="serif"
+            style={{
+              fontSize: 34,
+              fontWeight: 500,
+              letterSpacing: "-0.03em",
+              margin: "10px 0 8px",
+            }}
+          >
+            Sign in
+          </h1>
+          <p
+            style={{
+              fontSize: 13,
+              color: "var(--ink-soft)",
+              marginTop: 0,
+              marginBottom: 22,
+            }}
+          >
+            Access your orders, addresses, and wishlist.
+          </p>
+          <SignInForm callbackUrl={callbackUrl} initialError={error} />
+        </div>
+        <p
+          style={{
+            marginTop: 24,
+            fontSize: 13,
+            color: "var(--ink-soft)",
+            textAlign: "center",
+          }}
+        >
+          Don&apos;t have an account?{" "}
+          <Link
+            href={
+              callbackUrl
+                ? `/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`
+                : "/signup"
+            }
+            style={{ color: "var(--accent)", fontWeight: 500 }}
+          >
+            Create one
+          </Link>
+        </p>
+      </main>
+    </div>
   );
 }
